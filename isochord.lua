@@ -159,7 +159,7 @@ function draw()
     for x = 1, 5 do
       local d = (x-1) - visual_chord_pos
       local br
-      if d <= 0 then br = math.max(4, gauss(d*d)) else br = 1 end
+      if d <= 0 then br = math.max(4, gauss(d*d)) else br = 0 end
       grid_led(x, 6, br)
     end
 
