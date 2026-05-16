@@ -3,6 +3,7 @@ GRID_HEIGHT = 8
 selected_octave = 0
 BASE_NOTE = 48 + selected_octave * 12
 
+
 local scales = {
   {abbrev="Mj",size=7,degrees={0,2,4,5,7,9,11}},{abbrev="Mi",size=7,degrees={0,2,3,5,7,8,10}},
   {abbrev="Do",size=7,degrees={0,2,3,5,7,9,10}},{abbrev="Ph",size=7,degrees={0,1,3,5,7,8,10}},
@@ -24,6 +25,7 @@ visual_root_row = 0.0
 
 velocity = {127,112,96,80,64,32,16,1}
 held_notes = {}
+local held_note_set = {}
 chord_size = 1
 visual_chord_pos = 0.0
 ch = 1
@@ -79,6 +81,8 @@ local function get_chord_notes(x, y)
   return notes
 end
 
+local BIT_POWERS = {16, 8, 4, 2, 1}
+
 local function draw_text(name, brightness)
   local char_w = 5
   local x0 = GRID_WIDTH - (#name * char_w + #name - 1) + 1
@@ -89,7 +93,7 @@ local function draw_text(name, brightness)
       for row = 1, 5 do
         local bits = glyph[row]
         for col = 0, 4 do
-          if math.floor(bits / (2^(4-col))) % 2 == 1 then
+          if math.floor(bits / BIT_POWERS[col+1]) % 2 == 1 then
             grid_led(cx+col, row, brightness)
           end
         end
@@ -123,7 +127,7 @@ function draw()
   end
 
   if alt == 0 then
-    local held_note_set = {}
+    for k in pairs(held_note_set) do held_note_set[k] = nil end
     for _, notes in pairs(held_notes) do
       for _, n in ipairs(notes) do held_note_set[n] = true end
     end
