@@ -26,6 +26,7 @@ visual_root_row = 0.0
 velocity = {127,112,96,80,64,32,16,1}
 held_notes = {}
 local held_note_set = {}
+local midi_in_note_set = {}
 chord_size = 1
 visual_chord_pos = 0.0
 ch = 1
@@ -141,6 +142,8 @@ function draw()
             grid_led(x, y, 15)
           elseif held_note_set[n] then
             grid_led(x, y, 8)
+          elseif midi_in_note_set[n] then
+            grid_led(x, y, 6)
           elseif n % 12 == selected_root then
             grid_led(x, y, 4)
           end
@@ -184,6 +187,9 @@ function draw()
       local fade = 1
       if overlay_timer > 65 then fade = (75 - overlay_timer) / 10
       elseif overlay_timer < 20 then fade = overlay_timer / 20 end
+      for y = 1, 5 do
+        for x = 6, GRID_WIDTH do grid_led(x, y, 0) end
+      end
       draw_text(overlay_text, math.max(1, math.floor(fade * 8)))
     end
   end
@@ -200,6 +206,8 @@ event_grid = function(x, y, z)
         for _, n in ipairs(notes) do midi_note_off(n, 0, ch) end
         held_notes[pos] = nil
       end
+    else
+      overlay_timer = 0
     end
     return
   end
@@ -230,6 +238,15 @@ event_grid = function(x, y, z)
       selected_octave = x - 3
       BASE_NOTE = 48 + selected_octave * 12
     end
+  end
+end
+
+event_midi = function(byte1, byte2, byte3)
+  local msg = midi_to_msg({byte1, byte2, byte3})
+  if msg.type == "note_on" and msg.vel > 0 then
+    midi_in_note_set[msg.note] = true
+  elseif msg.type == "note_off" or (msg.type == "note_on" and msg.vel == 0) then
+    midi_in_note_set[msg.note] = nil
   end
 end
 
