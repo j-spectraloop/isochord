@@ -151,10 +151,10 @@ function draw()
       end
     end
 
-    for y = 1, 2 do
+    for y = 2, 3 do
       for x = 1, 5 do
         local dc = (x-1) - visual_scale_col
-        local dr = ((y==2) and 0 or 1) - visual_scale_row
+        local dr = ((y==3) and 0 or 1) - visual_scale_row
         grid_led(x, y, gauss(dc*dc + dr*dr*1.5))
       end
     end
@@ -163,34 +163,27 @@ function draw()
       local d = (x-1) - visual_chord_pos
       local br
       if d <= 0 then br = math.max(4, gauss(d*d)) else br = 0 end
-      grid_led(x, 6, br)
+      grid_led(x, 7, br)
     end
 
-    for y = 7, 8 do
-      for x = 1, 5 do
-        local d = (x-3) - visual_octave_pos
-        local dy = y - 7.5
-        grid_led(x, y, gauss(d*d + dy*dy*0.3))
-      end
+    for x = 1, 5 do
+      local d = (x-3) - visual_octave_pos
+      grid_led(x, 8, gauss(d*d))
     end
 
-    for y = 4, 5 do
+    for y = 5, 6 do
       for x = 1, 5 do
         local dc = (x-1) - visual_root_col
-        local dr = ((y==5) and 0 or 1) - visual_root_row
+        local dr = ((y==6) and 0 or 1) - visual_root_row
         grid_led(x, y, gauss(dc*dc + dr*dr*1.5))
       end
     end
 
     if overlay_timer > 0 then
-      overlay_timer = overlay_timer - 1
-      local fade = 1
-      if overlay_timer > 65 then fade = (75 - overlay_timer) / 10
-      elseif overlay_timer < 20 then fade = overlay_timer / 20 end
       for y = 1, 5 do
         for x = 6, GRID_WIDTH do grid_led(x, y, 0) end
       end
-      draw_text(overlay_text, math.max(1, math.floor(fade * 8)))
+      draw_text(overlay_text, 8)
     end
   end
 
@@ -220,21 +213,21 @@ event_grid = function(x, y, z)
       held_notes[pos] = notes
     end
   elseif x >= 1 and x <= 5 then
-    if y == 1 or y == 2 then
-      local idx = (y==2) and x or (x+5)
+    if y == 2 or y == 3 then
+      local idx = (y==3) and x or (x+5)
       selected_scale = idx
       scale_degrees = scales[idx].degrees
       scale_size = scales[idx].size
       overlay_text = scales[idx].abbrev
       overlay_timer = 75
-    elseif y == 4 or y == 5 then
-      local idx = (y==5) and x or (x+5)
+    elseif y == 5 or y == 6 then
+      local idx = (y==6) and x or (x+5)
       selected_root = root_note_values[idx]
       overlay_text = root_names[idx]
       overlay_timer = 75
-    elseif y == 6 then
+    elseif y == 7 then
       chord_size = x
-    elseif y == 7 or y == 8 then
+    elseif y == 8 then
       selected_octave = x - 3
       BASE_NOTE = 48 + selected_octave * 12
     end
