@@ -184,7 +184,7 @@ function draw()
       local fade = 1
       if overlay_timer > 65 then fade = (75 - overlay_timer) / 10
       elseif overlay_timer < 20 then fade = overlay_timer / 20 end
-      draw_text(overlay_text, math.max(1, math.floor(fade * 15)))
+      draw_text(overlay_text, math.max(1, math.floor(fade * 8)))
     end
   end
 
