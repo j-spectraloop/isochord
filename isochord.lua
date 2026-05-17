@@ -3,7 +3,6 @@ GRID_HEIGHT = 8
 selected_octave = 0
 BASE_NOTE = 48 + selected_octave * 12
 
-
 local scales = {
   {abbrev="Mj",size=7,degrees={0,2,4,5,7,9,11}},{abbrev="Mi",size=7,degrees={0,2,3,5,7,8,10}},
   {abbrev="Do",size=7,degrees={0,2,3,5,7,9,10}},{abbrev="Ph",size=7,degrees={0,1,3,5,7,8,10}},
@@ -17,10 +16,10 @@ local scale_size = scales[1].size
 visual_scale_col = 0.0
 visual_scale_row = 0.0
 
-local root_note_values = {9,10,11,0,2,3,4,5,7,8}
-local root_names = {"A","Bb","B","C","D","Eb","E","F","G","Ab"}
+local root_note_values = {0,1,2,3,4,5,6,7,8,9,10,11}
+local root_names = {"C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"}
 selected_root = 0
-visual_root_col = 3.0
+visual_root_col = 0.0
 visual_root_row = 0.0
 
 velocity = {127,112,96,80,64,32,16,1}
@@ -28,10 +27,8 @@ held_notes = {}
 local held_note_set = {}
 local midi_in_note_set = {}
 chord_size = 1
-visual_chord_pos = 0.0
 ch = 1
 vel = 1
-alt = 0
 visual_octave_pos = 0
 
 overlay_text = ""
@@ -64,11 +61,11 @@ local function root_semitone_to_index(s)
 end
 
 local function root_index_to_colrow(i)
-  return (i-1) % 5, math.floor((i-1) / 5)
+  return (i-1) % 4, math.floor((i-1) / 4)
 end
 
 local function get_chord_notes(x, y)
-  local base = selected_root >= 9 and BASE_NOTE - 12 or BASE_NOTE
+  local base = selected_root >= 8 and BASE_NOTE - 12 or BASE_NOTE
   local total = (x-6) + 3*(GRID_HEIGHT-y)
   local notes = {}
   for i = 0, chord_size-1 do
@@ -104,7 +101,7 @@ local function draw_text(name, brightness)
 end
 
 function note(x, y)
-  local base = selected_root >= 9 and BASE_NOTE - 12 or BASE_NOTE
+  local base = selected_root >= 8 and BASE_NOTE - 12 or BASE_NOTE
   local total = (x-6) + 3*(GRID_HEIGHT-y)
   local degree = (total % scale_size) + 1
   local octave = math.floor(total / scale_size)
@@ -116,7 +113,6 @@ function draw()
   grid_led_all(0)
 
   visual_octave_pos = glide(visual_octave_pos, selected_octave)
-  visual_chord_pos  = chord_size - 1
   visual_scale_col  = glide(visual_scale_col,  (selected_scale-1) % 5)
   visual_scale_row  = glide(visual_scale_row,  math.floor((selected_scale-1) / 5))
 
@@ -127,64 +123,68 @@ function draw()
     visual_root_row = glide(visual_root_row, tr)
   end
 
-  if alt == 0 then
-    for k in pairs(held_note_set) do held_note_set[k] = nil end
-    for _, notes in pairs(held_notes) do
-      for _, n in ipairs(notes) do held_note_set[n] = true end
-    end
+  for k in pairs(held_note_set) do held_note_set[k] = nil end
+  for _, notes in pairs(held_notes) do
+    for _, n in ipairs(notes) do held_note_set[n] = true end
+  end
 
-    for y = 1, GRID_HEIGHT do
-      for x = 6, GRID_WIDTH do
-        local n = note(x, y)
-        if n >= 0 and n <= 127 then
-          local pos = x*10 + y
-          if held_notes[pos] then
-            grid_led(x, y, 15)
-          elseif held_note_set[n] then
-            grid_led(x, y, 8)
-          elseif midi_in_note_set[n] then
-            grid_led(x, y, 6)
-          elseif n % 12 == selected_root then
-            grid_led(x, y, 4)
-          end
+  -- play area
+  for y = 1, GRID_HEIGHT do
+    for x = 6, GRID_WIDTH do
+      local n = note(x, y)
+      if n >= 0 and n <= 127 then
+        local pos = x*10 + y
+        if held_notes[pos] then
+          grid_led(x, y, 15)
+        elseif held_note_set[n] then
+          grid_led(x, y, 8)
+        elseif midi_in_note_set[n] then
+          grid_led(x, y, 6)
+        elseif n % 12 == selected_root then
+          grid_led(x, y, 4)
         end
       end
     end
+  end
 
-    for y = 2, 3 do
-      for x = 1, 5 do
-        local dc = (x-1) - visual_scale_col
-        local dr = ((y==3) and 0 or 1) - visual_scale_row
-        grid_led(x, y, gauss(dc*dc + dr*dr*1.5))
-      end
-    end
-
+  -- scale selector (y=1-2, x=1-5)
+  for y = 1, 2 do
     for x = 1, 5 do
-      local d = (x-1) - visual_chord_pos
-      local br
-      if d <= 0 then br = math.max(4, gauss(d*d)) else br = 0 end
-      grid_led(x, 7, br)
+      local dc = (x-1) - visual_scale_col
+      local dr = ((y==2) and 0 or 1) - visual_scale_row
+      grid_led(x, y, gauss(dc*dc + dr*dr*1.5))
     end
+  end
 
-    for x = 1, 5 do
-      local d = (x-3) - visual_octave_pos
-      grid_led(x, 8, gauss(d*d))
-    end
+  -- chord row (y=7, x=1-5)
+  for x = 1, 5 do
+    local d = (x-1) - (chord_size - 1)
+    local br
+    if d <= 0 then br = math.max(4, gauss(d*d)) else br = 0 end
+    grid_led(x, 7, br)
+  end
 
-    for y = 5, 6 do
-      for x = 1, 5 do
-        local dc = (x-1) - visual_root_col
-        local dr = ((y==6) and 0 or 1) - visual_root_row
-        grid_led(x, y, gauss(dc*dc + dr*dr*1.5))
-      end
-    end
+  -- octave row (y=8, x=1-5)
+  for x = 1, 5 do
+    local d = (x-3) - visual_octave_pos
+    grid_led(x, 8, gauss(d*d))
+  end
 
-    if overlay_timer > 0 then
-      for y = 1, 5 do
-        for x = 6, GRID_WIDTH do grid_led(x, y, 0) end
-      end
-      draw_text(overlay_text, 8)
+  -- root selector (y=4-6, x=1-4)
+  for y = 4, 6 do
+    for x = 1, 4 do
+      local dc = (x-1) - visual_root_col
+      local dr = (y-4) - visual_root_row
+      grid_led(x, y, gauss(dc*dc + dr*dr*1.5))
     end
+  end
+
+  -- overlay
+  if overlay_timer > 0 then
+    for y = 1, 5 do
+      for x = 6, GRID_WIDTH do grid_led(x, y, 0) end
+    end
+    draw_text(overlay_text, 8)
   end
 
   grid_refresh()
@@ -213,18 +213,18 @@ event_grid = function(x, y, z)
       held_notes[pos] = notes
     end
   elseif x >= 1 and x <= 5 then
-    if y == 2 or y == 3 then
-      local idx = (y==3) and x or (x+5)
+    if y == 1 or y == 2 then
+      local idx = (y==2) and x or (x+5)
       selected_scale = idx
       scale_degrees = scales[idx].degrees
       scale_size = scales[idx].size
       overlay_text = scales[idx].abbrev
-      overlay_timer = 75
-    elseif y == 5 or y == 6 then
-      local idx = (y==6) and x or (x+5)
+      overlay_timer = 1
+    elseif y >= 4 and y <= 6 and x <= 4 then
+      local idx = (y-4)*4 + x
       selected_root = root_note_values[idx]
       overlay_text = root_names[idx]
-      overlay_timer = 75
+      overlay_timer = 1
     elseif y == 7 then
       chord_size = x
     elseif y == 8 then
