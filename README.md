@@ -1,6 +1,6 @@
 # isochord
 
-An isomorphic scale instrument for the [monome grid](https://monome.org/docs/grid/), inspired by Ableton's Push scale layouts. Play any scale in any key with consistent fingering patterns across the entire grid, with built-in chord voicing and real-time MIDI output.
+An isomorphic scale instrument for the [monome grid](https://monome.org/docs/grid/), inspired by the Ableton Push layout. Play any scale in any key with consistent fingering patterns across the entire grid, with built-in chord voicing and real-time MIDI output.
 
 Connect your monome grid using the [diii](https://diii.monome.org) browser utility, and upload `isochord.lua`.
 
@@ -74,8 +74,8 @@ A 2x5 matrix selecting from 10 common scales. A smooth 2D gliding light tracks t
 A 3x4 matrix covering all 12 chromatic notes, arranged in ascending order from C. A smooth 2D gliding light tracks the current selection. Pressing and holding shows the note name; releasing clears it.
 
 ```
-y=4:  C   Db  D   Eb
-y=5:  E   F   Gb  G
+y=4:  E   F   Gb  G
+y=5:  C   Db  D   Eb
 y=6:  Ab  A   Bb  B
 ```
 
@@ -110,7 +110,7 @@ A single-row Gaussian glow. The center of brightness shows the current octave. P
 ## MIDI
 
 - Outputs on **channel 1** (`ch = 1` — change in source to reroute)
-- Incoming MIDI notes are visualized on the play area at brightness 6 (no note-on is re-sent)
+- Incoming MIDI notes are visualized on the play area at brightness 6 (no note-on is re-sent, no loops)
 
 ---
 
