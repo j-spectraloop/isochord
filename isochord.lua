@@ -16,11 +16,11 @@ local scale_size = scales[1].size
 visual_scale_col = 0.0
 visual_scale_row = 0.0
 
-local root_note_values = {0,1,2,3,4,5,6,7,8,9,10,11}
-local root_names = {"C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"}
+local root_note_values = {4,5,6,7,0,1,2,3,8,9,10,11}
+local root_names = {"E","F","Gb","G","C","Db","D","Eb","Ab","A","Bb","B"}
 selected_root = 0
 visual_root_col = 0.0
-visual_root_row = 0.0
+visual_root_row = 1.0
 
 velocity = {127,112,96,80,64,32,16,1}
 held_notes = {}
